@@ -403,7 +403,84 @@ app.get('/products-by-id/:product_id', function(req, res, next) {
         }
     );
 });
+app.post('/add-order', jsonParser, function(req, res, next) {
+    const { order_status, cus_id} = req.body;
+    connection.execute(
+        'INSERT INTO orders (orders.order_status,orders.cus_id) VALUES(?,?);',
+        [order_status, cus_id],
+        function(err, results, fields) {
+            if (err) {
+                return res.status(500).json({ status: 'error', message: err});
+            }
+            const insertId = results.insertId; 
+           
+            res.status(201).json({ status: 'success', message: 'Phone number added successfully',ID:insertId });
+        }
+    );
+});
+app.post('/add-orderdetails', jsonParser, function(req, res, next) {
+    const { order_id,product_id,total_price,bought} = req.body;
+  
+    connection.execute(
+        'INSERT INTO orderdetails (orderdetails.order_id,orderdetails.product_id,orderdetails.total_price,orderdetails.bought) VALUES(?,?,?,?)',
+        [parseInt(order_id),product_id,parseInt(total_price),parseInt(bought)],
+        function(err, results, fields) {
+            if (err) {
+                return res.status(500).json({ status: 'error', message: err});
+            }
+            
+           
+            res.status(201).json({ status: 'success', message: 'เพิ่มสำเร็จ' });
+        }
+    );
+});
+app.put('/add-update_products', jsonParser, function(req, res, next) {
+    const { remaining ,product_id} = req.body;
+  
+    connection.execute(
+        'UPDATE products SET products.remaining = ? WHERE products.product_id = ?',
+        [parseInt(remaining),product_id],
+        function(err, results, fields) {
+            if (err) {
+                return res.status(500).json({ status: 'error', message: err});
+            }
+            
+           
+            res.status(201).json({ status: 'success', message: 'เพิ่มสำเร็จ' });
+        }
+    );
+});
+app.get('/order-get/:cus_id', function(req, res, next) {
+    const cus_id = req.params.cus_id;
 
+    connection.query(
+        'SELECT orders.order_id,products.product_name,orderdetails.total_price,orderdetails.bought,orders.order_status,products.picture FROM orders INNER JOIN orderdetails ON orders.order_id=orderdetails.order_id INNER JOIN customers ON customers.cus_id=orders.cus_id INNER JOIN products ON products.product_id =orderdetails.product_id WHERE orders.cus_id =?',
+        [parseInt(cus_id)],
+        function(err, data) {
+            if (err) {
+                return res.json({ status: 'error', message: err });
+            }
+
+            res.json({ status: 'success',data });
+        }
+    );
+});
+app.put('/summit_orders', jsonParser, function(req, res, next) {
+    const { order_status,order_id} = req.body;
+  
+    connection.execute(
+        'UPDATE orders SET orders.order_status = ? WHERE orders.order_id =?',
+        [order_status,parseInt(order_id)],
+        function(err, results, fields) {
+            if (err) {
+                return res.status(500).json({ status: 'error', message: err});
+            }
+            
+           
+            res.status(201).json({ status: 'success', message: 'เพิ่มสำเร็จ' });
+        }
+    );
+});     
 
 app.listen(3333,function(){
     console.log('connect to server port 3333');
